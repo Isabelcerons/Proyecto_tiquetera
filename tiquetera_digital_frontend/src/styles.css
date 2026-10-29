@@ -1,0 +1,4 @@
+/* Forzar color de texto en las opciones de radio del ion-alert */
+ion-alert .alert-radio-label {
+  color: #fff !important;
+} 

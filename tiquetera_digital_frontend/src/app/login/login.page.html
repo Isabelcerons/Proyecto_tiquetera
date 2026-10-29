@@ -1,0 +1,63 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-title>
+      Tiquetera App
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <div class="login-container">
+    <div class="logo-container">
+      <ion-icon name="restaurant-outline" class="logo-icon"></ion-icon>
+      <h1>Tiquetera Restaurant</h1>
+      <p>Sistema de gestión de tiqueteras</p>
+    </div>
+
+    <ion-card>
+      <ion-card-header class="ion-text-center">
+        <ion-card-title>Bienvenido</ion-card-title>
+        <ion-card-subtitle>Ingrese sus credenciales para acceder</ion-card-subtitle>
+      </ion-card-header>
+
+      <ion-card-content>
+        <div class="form-container">
+          <form [formGroup]="loginForm" (ngSubmit)="onLoginSubmit()">
+            <div class="field-container">
+              <ion-item>
+                <ion-label position="stacked">Usuario</ion-label>
+                <ion-input type="text" formControlName="usuario" placeholder="Ingrese su usuario"></ion-input>
+                <ion-icon name="person" slot="start"></ion-icon>
+              </ion-item>
+              <div class="custom-error" *ngIf="usuarioError">{{ usuarioError }}</div>
+            </div>
+
+            <div class="field-container">
+              <ion-item>
+                <ion-label position="stacked">Contraseña</ion-label>
+                <ion-input type="password" formControlName="contrasena" placeholder="Ingrese su contraseña"></ion-input>
+                <ion-icon name="lock-closed" slot="start"></ion-icon>
+              </ion-item>
+              <div class="custom-error" *ngIf="contrasenaError">{{ contrasenaError }}</div>
+            </div>
+
+            <ion-button expand="block" type="submit" [disabled]="loginForm.invalid || loading" class="ion-margin-top">
+              <ion-spinner *ngIf="loading"></ion-spinner>
+              <span *ngIf="!loading">Iniciar Sesión</span>
+            </ion-button>
+
+            <div class="forgot-password">
+              <ion-button fill="clear" size="small" (click)="forgotPassword()">
+                ¿Olvidaste tu contraseña?
+              </ion-button>
+            </div>
+          </form>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <div class="version-info">
+      <p>Versión 1.0.0</p>
+    </div>
+  </div>
+</ion-content> 

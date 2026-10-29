@@ -1,0 +1,92 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-button (click)="volver()">
+        <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Crear Orden</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div *ngIf="mesa">
+    <h2>Mesa {{ mesa.numero }} - {{ mesa.zona }}</h2>
+    <p>Capacidad: {{ mesa.capacidad }} personas</p>
+    <ion-badge [color]="mesa.estado.nombre === 'disponible' ? 'success' : mesa.estado.nombre === 'ocupada' ? 'warning' : 'medium'">
+      {{ mesa.estado.nombre | titlecase }}
+    </ion-badge>
+    <ion-item class="ion-margin-top">
+      <ion-label>¿Cuántos clientes hay en la mesa?</ion-label>
+      <ion-select [(ngModel)]="cantidadClientes" (ionChange)="actualizarClientesSeleccionados()">
+        <ion-select-option *ngFor="let n of getOpcionesCantidadClientes()" [value]="n">{{ n }}</ion-select-option>
+      </ion-select>
+    </ion-item>
+    <div *ngFor="let cliente of clientesSeleccionados; let i = index" class="ion-margin-bottom">
+      <ion-item class="cliente-item-row">
+        <ion-label>Cliente {{ i + 1 }}:
+          <span *ngIf="cliente" class="cliente-seleccionado-inline">
+            <ng-container *ngIf="cliente['metodoPago'] === 'efectivo'">EFECTIVO</ng-container>
+            <ng-container *ngIf="cliente.nombre && cliente.pin">{{ (cliente.pin + ' ' + cliente.nombre).toUpperCase() }}</ng-container>
+            <ng-container *ngIf="cliente.nombre && !cliente.pin && cliente['metodoPago'] !== 'efectivo'">{{ cliente.nombre.toUpperCase() }}</ng-container>
+          </span>
+          <span *ngIf="!cliente" class="cliente-seleccionado-inline cliente-noasignado">NO ASIGNADO</span>
+        </ion-label>
+        <ion-button *ngIf="!cliente" slot="end" (click)="abrirBusquedaCliente(i)">
+          <ion-icon name="search" slot="icon-only"></ion-icon>
+        </ion-button>
+        <ion-button *ngIf="cliente" slot="end" fill="clear" color="danger" (click)="clientesSeleccionados[i] = null">
+          <ion-icon name="close" slot="icon-only"></ion-icon>
+        </ion-button>
+      </ion-item>
+    </div>
+  </div>
+
+  <!-- Tipo de orden -->
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Tipo de Orden</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-item>
+        <ion-label>Tipo</ion-label>
+        <ion-select [(ngModel)]="tipoOrden">
+          <ion-select-option value="completo">Completo (bandeja y sopa)</ion-select-option>
+          <ion-select-option value="seco">Solo seco</ion-select-option>
+          <ion-select-option value="sopa">Solo sopa</ion-select-option>
+        </ion-select>
+      </ion-item>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Selección de productos -->
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Agregar Productos</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-item>
+        <ion-label position="floating">Buscar producto</ion-label>
+        <ion-input [(ngModel)]="busquedaProducto" (ionInput)="buscarProductoPorNombre(busquedaProducto)"></ion-input>
+      </ion-item>
+      <ion-list *ngIf="resultadosProductos.length > 0">
+        <ion-item *ngFor="let producto of resultadosProductos" (click)="agregarProducto(producto)">
+          <ion-label>{{ producto.nombre }} - {{ producto.precio | currency:'COP':'symbol':'1.0-0' }}</ion-label>
+        </ion-item>
+      </ion-list>
+      <ion-list *ngIf="productosSeleccionados.length > 0">
+        <ion-item *ngFor="let p of productosSeleccionados">
+          <ion-label>{{ p.producto.nombre }}</ion-label>
+          <ion-badge color="primary">x{{ p.cantidad }}</ion-badge>
+          <ion-button fill="clear" color="danger" (click)="quitarProducto(p.producto)">
+            <ion-icon name="remove-circle"></ion-icon>
+          </ion-button>
+        </ion-item>
+      </ion-list>
+    </ion-card-content>
+  </ion-card>
+
+  <ion-button expand="block" color="success" (click)="crearOrden()" [disabled]="!cliente || productosSeleccionados.length === 0">
+    Crear Orden
+  </ion-button>
+</ion-content> 

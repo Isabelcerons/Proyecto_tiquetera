@@ -1,0 +1,32 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-button (click)="volver()">
+        <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Reportes</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <!-- Loading indicator -->
+  <div *ngIf="loading" class="ion-text-center ion-padding">
+    <ion-spinner></ion-spinner>
+    <p>Cargando reportes...</p>
+  </div>
+
+  <!-- Mensaje de sección en construcción -->
+  <ion-card *ngIf="!loading">
+    <ion-card-header>
+      <ion-card-title>Reportes</ion-card-title>
+      <ion-card-subtitle>Sección en construcción</ion-card-subtitle>
+    </ion-card-header>
+    <ion-card-content>
+      <p>
+        Esta sección de reportes está actualmente en desarrollo. Próximamente podrá 
+        generar informes detallados de ventas, consumos y actividad del restaurante.
+      </p>
+    </ion-card-content>
+  </ion-card>
+</ion-content> 

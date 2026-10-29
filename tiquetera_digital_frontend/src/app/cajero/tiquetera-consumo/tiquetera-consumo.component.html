@@ -1,0 +1,177 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-button (click)="volver()">
+        <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Tiquetera de Cliente</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <!-- Loading indicator -->
+  <div *ngIf="loading" class="ion-text-center ion-padding">
+    <ion-spinner></ion-spinner>
+    <p>Cargando datos...</p>
+  </div>
+
+  <!-- Error message -->
+  <ion-item *ngIf="errorMessage" color="danger">
+    <ion-label>{{ errorMessage }}</ion-label>
+  </ion-item>
+
+  <!-- No se encontró tiquetera -->
+  <ion-card *ngIf="!loading && !tiquetera">
+    <ion-card-header>
+      <ion-card-title>Tiquetera no encontrada</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <p>La tiquetera solicitada no existe o ha sido eliminada.</p>
+      <ion-button expand="block" (click)="nuevaBusqueda()">Nueva búsqueda</ion-button>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Detalles de tiquetera -->
+  <div *ngIf="!loading && tiquetera">
+    <!-- Segmentos para navegación -->
+    <ion-segment [(ngModel)]="activeTab" (ionChange)="segmentChanged($event)">
+      <ion-segment-button value="info">
+        <ion-label>Información</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="consumo">
+        <ion-label>Consumo</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="movimientos">
+        <ion-label>Movimientos</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+
+    <!-- Tab Información -->
+    <div *ngIf="activeTab === 'info'">
+      <ion-card>
+        <ion-card-header>
+          <ion-card-subtitle>Tiquetera #{{ tiquetera.id }}</ion-card-subtitle>
+          <ion-card-title>
+            Cliente: {{ tiquetera.cliente?.nombre || 'Sin asignar' }}
+          </ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <ion-grid>
+            <ion-row>
+              <ion-col size="6">
+                <p><strong>Saldo:</strong> {{ tiquetera.saldoDisponible | currency:'COP':'symbol':'1.0-0' }}</p>
+              </ion-col>
+              <ion-col size="6">
+                <p><strong>Estado:</strong> 
+                  <ion-badge color="success" *ngIf="tiquetera.estado === 'activa'">Activa</ion-badge>
+                  <ion-badge color="warning" *ngIf="tiquetera.estado === 'vencida'">Vencida</ion-badge>
+                  <ion-badge color="danger" *ngIf="tiquetera.estado === 'agotada'">Agotada</ion-badge>
+                  <ion-badge color="medium" *ngIf="tiquetera.estado === 'cancelada'">Cancelada</ion-badge>
+                </p>
+              </ion-col>
+            </ion-row>
+            <ion-row>
+              <ion-col size="6">
+                <p><strong>Creada:</strong> {{ tiquetera.fechaCreacion | date:'dd/MM/yyyy' }}</p>
+              </ion-col>
+              <ion-col size="6" *ngIf="tiquetera.fechaVencimiento">
+                <p><strong>Vence:</strong> {{ tiquetera.fechaVencimiento | date:'dd/MM/yyyy' }}</p>
+              </ion-col>
+            </ion-row>
+          </ion-grid>
+
+          <ion-button 
+            expand="block" 
+            color="primary"
+            (click)="activeTab = 'consumo'"
+            [disabled]="tiquetera.estado !== 'activa' || tiquetera.saldoDisponible <= 0"
+            class="ion-margin-top">
+            Procesar Consumo
+          </ion-button>
+        </ion-card-content>
+      </ion-card>
+    </div>
+
+    <!-- Tab Consumo -->
+    <div *ngIf="activeTab === 'consumo'">
+      <ion-card>
+        <ion-card-header>
+          <ion-card-title>Registrar Consumo</ion-card-title>
+          <ion-card-subtitle>Saldo disponible: {{ tiquetera.saldoDisponible | currency:'COP':'symbol':'1.0-0' }}</ion-card-subtitle>
+        </ion-card-header>
+        
+        <ion-card-content>
+          <!-- Alerta de consumo exitoso -->
+          <ion-item *ngIf="consumoExitoso" color="success">
+            <ion-icon name="checkmark-circle" slot="start"></ion-icon>
+            <ion-label>
+              <h2>¡Consumo registrado con éxito!</h2>
+              <p>Nuevo saldo: {{ tiquetera.saldoDisponible | currency:'COP':'symbol':'1.0-0' }}</p>
+            </ion-label>
+          </ion-item>
+
+          <!-- Formulario de consumo -->
+          <form [formGroup]="consumoForm" (ngSubmit)="procesarConsumo()">
+            <ion-item>
+              <ion-label position="floating">Monto a descontar</ion-label>
+              <ion-input type="number" formControlName="monto"></ion-input>
+              <ion-note slot="error" *ngIf="consumoForm.get('monto')?.invalid && consumoForm.get('monto')?.touched">
+                El monto debe ser mayor a cero
+              </ion-note>
+            </ion-item>
+            
+            <ion-item>
+              <ion-label position="floating">Descripción</ion-label>
+              <ion-input formControlName="descripcion"></ion-input>
+            </ion-item>
+            
+            <ion-item>
+              <ion-label position="floating">Referencia (Orden #)</ion-label>
+              <ion-input formControlName="referencia"></ion-input>
+            </ion-item>
+            
+            <ion-button 
+              expand="block" 
+              type="submit" 
+              [disabled]="consumoForm.invalid || formLoading || tiquetera.estado !== 'activa' || tiquetera.saldoDisponible <= 0"
+              class="ion-margin-top">
+              <ion-spinner *ngIf="formLoading"></ion-spinner>
+              <span *ngIf="!formLoading">Procesar Consumo</span>
+            </ion-button>
+          </form>
+        </ion-card-content>
+      </ion-card>
+    </div>
+
+    <!-- Tab Movimientos -->
+    <div *ngIf="activeTab === 'movimientos'">
+      <ion-card>
+        <ion-card-header>
+          <ion-card-title>Historial de Movimientos</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <ion-list>
+            <ion-item *ngFor="let movimiento of movimientos">
+              <ion-label>
+                <h3 [ngClass]="{'text-success': movimiento.tipo === 'carga', 'text-danger': movimiento.tipo === 'consumo'}">
+                  {{ movimiento.tipo === 'carga' ? '+' : '-' }} {{ (movimiento.tipo === 'consumo' ? -movimiento.monto : movimiento.monto) | currency:'COP':'symbol':'1.0-0' }}
+                </h3>
+                <p>{{ movimiento.descripcion }}</p>
+                <p>{{ movimiento.fecha | date:'dd/MM/yyyy HH:mm' }}</p>
+              </ion-label>
+              <ion-note slot="end" color="medium">
+                Saldo: {{ movimiento.saldoNuevo | currency:'COP':'symbol':'1.0-0' }}
+              </ion-note>
+            </ion-item>
+            <ion-item *ngIf="movimientos.length === 0">
+              <ion-label class="ion-text-center">
+                <p>No hay movimientos registrados</p>
+              </ion-label>
+            </ion-item>
+          </ion-list>
+        </ion-card-content>
+      </ion-card>
+    </div>
+  </div>
+</ion-content> 

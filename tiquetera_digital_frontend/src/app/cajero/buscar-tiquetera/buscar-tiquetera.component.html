@@ -1,0 +1,98 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-button (click)="volver()">
+        <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Buscar Tiquetera</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <!-- Error message -->
+  <ion-item *ngIf="errorMessage" color="danger">
+    <ion-label>{{ errorMessage }}</ion-label>
+  </ion-item>
+
+  <!-- Búsqueda -->
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Buscar Tiquetera</ion-card-title>
+      <ion-card-subtitle>Buscar por nombre, email o ID de cliente</ion-card-subtitle>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-item>
+        <ion-input 
+          [(ngModel)]="busqueda" 
+          placeholder="Nombre de cliente, email o ID"
+          (keyup.enter)="buscarTiquetera()">
+        </ion-input>
+        <ion-button fill="clear" slot="end" (click)="buscarTiquetera()">
+          <ion-icon slot="icon-only" name="search"></ion-icon>
+        </ion-button>
+      </ion-item>
+      
+      <ion-button 
+        expand="block" 
+        (click)="buscarTiquetera()"
+        class="ion-margin-top"
+        [disabled]="buscando">
+        <ion-spinner *ngIf="buscando"></ion-spinner>
+        <span *ngIf="!buscando">Buscar</span>
+      </ion-button>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Clientes recientes -->
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Clientes Recientes</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-list>
+        <ion-item *ngFor="let cliente of clientesRecientes" button (click)="buscarPorCliente(cliente.id)">
+          <ion-avatar slot="start">
+            <ion-icon name="person" size="large"></ion-icon>
+          </ion-avatar>
+          <ion-label>{{ cliente.nombre }}</ion-label>
+        </ion-item>
+        <ion-item *ngIf="clientesRecientes.length === 0">
+          <ion-label>No hay clientes recientes</ion-label>
+        </ion-item>
+      </ion-list>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Resultados de búsqueda -->
+  <ion-card *ngIf="buscando || resultados.length > 0">
+    <ion-card-header>
+      <ion-card-title>Resultados</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <!-- Loading indicator -->
+      <div *ngIf="buscando" class="ion-text-center ion-padding">
+        <ion-spinner></ion-spinner>
+        <p>Buscando tiqueteras...</p>
+      </div>
+
+      <!-- Resultados -->
+      <ion-list *ngIf="!buscando">
+        <ion-item *ngFor="let tiquetera of resultados" button detail="true" (click)="verDetalle(tiquetera.id)">
+          <ion-label>
+            <h2>Tiquetera #{{ tiquetera.id }}</h2>
+            <p>Cliente: {{ tiquetera.cliente?.nombre || 'Sin asignar' }}</p>
+            <p>Saldo: {{ tiquetera.saldoDisponible | currency:'COP':'symbol':'1.0-0' }}</p>
+          </ion-label>
+          <ion-badge slot="end" color="success" *ngIf="tiquetera.estado === 'activa'">Activa</ion-badge>
+          <ion-badge slot="end" color="warning" *ngIf="tiquetera.estado === 'vencida'">Vencida</ion-badge>
+          <ion-badge slot="end" color="danger" *ngIf="tiquetera.estado === 'agotada'">Agotada</ion-badge>
+          <ion-badge slot="end" color="medium" *ngIf="tiquetera.estado === 'cancelada'">Cancelada</ion-badge>
+        </ion-item>
+        <ion-item *ngIf="resultados.length === 0">
+          <ion-label>No se encontraron resultados</ion-label>
+        </ion-item>
+      </ion-list>
+    </ion-card-content>
+  </ion-card>
+</ion-content> 

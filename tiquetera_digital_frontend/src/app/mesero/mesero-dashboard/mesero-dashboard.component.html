@@ -1,0 +1,75 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Panel de Mesero</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="logout()">
+        <ion-icon name="log-out-outline" slot="start"></ion-icon>
+        Cerrar Sesión
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="welcome-message">
+    <h2>Bienvenido, {{ currentUser?.nombre }}</h2>
+    <p>¿Qué te gustaría hacer hoy?</p>
+  </div>
+
+  <!-- Menú de accesos directos en 2x2 -->
+  <div class="menu-grid">
+    <div class="menu-row">
+      <ion-card button="true" class="menu-card" (click)="navigateTo('mesas')">
+        <ion-card-content class="ion-text-center">
+          <ion-icon name="restaurant-outline" class="menu-icon"></ion-icon>
+          <div>Mesas</div>
+        </ion-card-content>
+      </ion-card>
+      <ion-card button="true" class="menu-card" (click)="navigateTo('pedidos-activos')">
+        <ion-card-content class="ion-text-center">
+          <ion-icon name="list-outline" class="menu-icon"></ion-icon>
+          <div>Pedidos Activos</div>
+        </ion-card-content>
+      </ion-card>
+    </div>
+    <div class="menu-row">
+      <ion-card button="true" class="menu-card" (click)="navigateTo('orden')">
+        <ion-card-content class="ion-text-center">
+          <ion-icon name="add-circle-outline" class="menu-icon"></ion-icon>
+          <div>Nuevo Pedido</div>
+        </ion-card-content>
+      </ion-card>
+      <ion-card button="true" class="menu-card" (click)="navigateTo('perfil')">
+        <ion-card-content class="ion-text-center">
+          <ion-icon name="person-outline" class="menu-icon"></ion-icon>
+          <div>Mi Perfil</div>
+        </ion-card-content>
+      </ion-card>
+    </div>
+  </div>
+
+  <!-- Resumen de estado actual -->
+  <div class="status-summary">
+    <h3>Estado Actual</h3>
+    <ion-list lines="none">
+      <ion-item>
+        <ion-label>
+          <h2>Mesas asignadas</h2>
+          <p>{{ mesasAsignadas }} mesas</p>
+        </ion-label>
+      </ion-item>
+      <ion-item>
+        <ion-label>
+          <h2>Pedidos activos</h2>
+          <p>{{ pedidosActivos }} pedidos</p>
+        </ion-label>
+      </ion-item>
+      <ion-item>
+        <ion-label>
+          <h2>Última actividad</h2>
+          <p>Pedido #32 - 10 minutos atrás</p>
+        </ion-label>
+      </ion-item>
+    </ion-list>
+  </div>
+</ion-content> 

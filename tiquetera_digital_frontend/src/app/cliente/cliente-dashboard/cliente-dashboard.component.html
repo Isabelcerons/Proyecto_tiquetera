@@ -1,0 +1,59 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Mi Cuenta</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="logout()">
+        <ion-icon name="log-out" slot="start"></ion-icon>
+        Cerrar sesión
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="user-greeting">
+    <h2>Hola, {{ currentUser?.nombre || 'Cliente' }}</h2>
+    <p>Bienvenido a tu tiquetera</p>
+  </div>
+
+  <!-- Loading indicator -->
+  <div *ngIf="loading" class="ion-text-center ion-padding">
+    <ion-spinner></ion-spinner>
+    <p>Cargando tiqueteras...</p>
+  </div>
+
+  <!-- Si no hay tiqueteras -->
+  <ion-card *ngIf="!loading && tiqueteras.length === 0">
+    <ion-card-header>
+      <ion-card-title>No tienes tiqueteras activas</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <p>Consulta con el administrador para adquirir una tiquetera.</p>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Lista de tiqueteras del cliente -->
+  <ion-card *ngFor="let tiquetera of tiqueteras" (click)="verDetalleTiquetera(tiquetera.id)">
+    <ion-card-header>
+      <ion-card-subtitle>Tiquetera #{{ tiquetera.id }}</ion-card-subtitle>
+      <ion-card-title>Saldo: {{ tiquetera.saldoDisponible | currency:'COP':'symbol':'1.0-0' }}</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-grid>
+        <ion-row>
+          <ion-col>
+            <p><strong>Estado:</strong> {{ tiquetera.estado }}</p>
+          </ion-col>
+          <ion-col>
+            <p><strong>Creada:</strong> {{ tiquetera.fechaCreacion | date:'dd/MM/yyyy' }}</p>
+          </ion-col>
+        </ion-row>
+        <ion-row *ngIf="tiquetera.fechaVencimiento">
+          <ion-col>
+            <p><strong>Vence:</strong> {{ tiquetera.fechaVencimiento | date:'dd/MM/yyyy' }}</p>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+    </ion-card-content>
+  </ion-card>
+</ion-content> 

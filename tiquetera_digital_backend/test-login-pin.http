@@ -1,0 +1,17 @@
+### Prueba de inicio de sesión con cédula y PIN
+POST http://localhost:3000/auth/login-pin
+Content-Type: application/json
+
+{
+  "cedula": "123456789",
+  "pin": "1234"
+}
+
+### También probar el login normal
+POST http://localhost:3000/auth/login
+Content-Type: application/json
+
+{
+  "username": "cliente_test",
+  "password": "cliente123"
+} 

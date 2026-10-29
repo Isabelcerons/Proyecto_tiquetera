@@ -1,0 +1,7 @@
+{
+  "name": "tiquetera-app",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular-standalone"
+}

@@ -1,0 +1,185 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Panel de Administrador</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="logout()">
+        <ion-icon name="log-out" slot="start"></ion-icon>
+        Cerrar sesión
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="user-greeting">
+    <h2>Bienvenido, {{ currentUser?.nombre || 'Administrador' }}</h2>
+    <p>Panel de Administración</p>
+  </div>
+
+  <!-- Skeleton loader cuando está cargando -->
+  <div *ngIf="loading">
+    <ion-skeleton-text animated style="width: 100%; height: 120px; margin-bottom: 16px;"></ion-skeleton-text>
+    <ion-skeleton-text animated style="width: 100%; height: 120px; margin-bottom: 16px;"></ion-skeleton-text>
+    <ion-skeleton-text animated style="width: 100%; height: 120px;"></ion-skeleton-text>
+  </div>
+
+  <!-- Métricas del Dashboard -->
+  <ion-grid *ngIf="!loading">
+    <ion-row>
+      <!-- Ventas del día -->
+      <ion-col size="12" size-md="4">
+        <ion-card>
+          <ion-card-header>
+            <ion-card-subtitle>Ventas del día</ion-card-subtitle>
+            <ion-card-title class="ion-text-center" color="primary">
+              ${{ metrics.ventasHoy | number:'1.0-0' }}
+            </ion-card-title>
+          </ion-card-header>
+          <ion-card-content class="ion-text-center">
+            <ion-icon name="cash-outline" size="large" color="success"></ion-icon>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+
+      <!-- Estado de mesas -->
+      <ion-col size="12" size-md="4">
+        <ion-card>
+          <ion-card-header>
+            <ion-card-subtitle>Mesas</ion-card-subtitle>
+          </ion-card-header>
+          <ion-card-content>
+            <div class="metrics-container">
+              <div class="metric-item">
+                <span class="metric-value">{{ metrics.mesasTotal }}</span>
+                <span class="metric-label">Total</span>
+              </div>
+              <div class="metric-item">
+                <span class="metric-value" [ngClass]="{'text-success': metrics.mesasDisponibles > 0}">
+                  {{ metrics.mesasDisponibles }}
+                </span>
+                <span class="metric-label">Disponibles</span>
+              </div>
+              <div class="metric-item">
+                <span class="metric-value" [ngClass]="{'text-warning': metrics.mesasOcupadas > 0}">
+                  {{ metrics.mesasOcupadas }}
+                </span>
+                <span class="metric-label">Ocupadas</span>
+              </div>
+            </div>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+
+      <!-- Órdenes activas -->
+      <ion-col size="12" size-md="4">
+        <ion-card>
+          <ion-card-header>
+            <ion-card-subtitle>Actividad</ion-card-subtitle>
+          </ion-card-header>
+          <ion-card-content>
+            <div class="metrics-container">
+              <div class="metric-item">
+                <span class="metric-value" [ngClass]="{'text-warning': metrics.ordenesAbiertas > 0}">
+                  {{ metrics.ordenesAbiertas }}
+                </span>
+                <span class="metric-label">Órdenes abiertas</span>
+              </div>
+              <div class="metric-item">
+                <span class="metric-value">
+                  {{ metrics.tiqueterasActivas }}
+                </span>
+                <span class="metric-label">Tiqueteras activas</span>
+              </div>
+            </div>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+
+    <!-- Productos más vendidos -->
+    <ion-row>
+      <ion-col size="12">
+        <ion-card>
+          <ion-card-header>
+            <ion-card-subtitle>Productos más vendidos</ion-card-subtitle>
+          </ion-card-header>
+          <ion-card-content>
+            <ion-list lines="none">
+              <ion-item *ngFor="let producto of metrics.productosMasVendidos; let i = index">
+                <ion-label>
+                  <h3>{{ i + 1 }}. {{ producto.nombre }}</h3>
+                </ion-label>
+                <ion-badge slot="end" color="primary">{{ producto.cantidad }} unid.</ion-badge>
+              </ion-item>
+
+              <ion-item *ngIf="metrics.productosMasVendidos.length === 0">
+                <ion-label>
+                  <h3>No hay datos disponibles</h3>
+                </ion-label>
+              </ion-item>
+            </ion-list>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+
+    <!-- Navegación a secciones -->
+    <ion-row>
+      <ion-col size="12" size-md="6" size-lg="3">
+        <ion-card button="true" (click)="navigateToSection('mesas')">
+          <ion-card-header>
+            <ion-card-title>
+              <ion-icon name="restaurant-outline"></ion-icon>
+              Mesas
+            </ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            Gestionar mesas, ver estado y asignar meseros.
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+
+      <ion-col size="12" size-md="6" size-lg="3">
+        <ion-card button="true" (click)="navigateToSection('productos')">
+          <ion-card-header>
+            <ion-card-title>
+              <ion-icon name="fast-food-outline"></ion-icon>
+              Productos
+            </ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            Administrar menú, precios y disponibilidad.
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+
+      <ion-col size="12" size-md="6" size-lg="3">
+        <ion-card button="true" (click)="navigateToSection('tiqueteras')">
+          <ion-card-header>
+            <ion-card-title>
+              <ion-icon name="ticket-outline"></ion-icon>
+              Tiqueteras
+            </ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            Gestionar tiqueteras de clientes, cargas y consumos.
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+
+      <ion-col size="12" size-md="6" size-lg="3">
+        <ion-card button="true" (click)="navigateToSection('reportes')">
+          <ion-card-header>
+            <ion-card-title>
+              <ion-icon name="bar-chart-outline"></ion-icon>
+              Reportes
+            </ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            Ver reportes de ventas, consumos y actividad.
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-content> 

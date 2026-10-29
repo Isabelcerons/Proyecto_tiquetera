@@ -1,0 +1,207 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-button (click)="volver()">
+        <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Nueva Tiquetera</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <!-- Error message -->
+  <ion-item *ngIf="errorMessage" color="danger">
+    <ion-label>{{ errorMessage }}</ion-label>
+  </ion-item>
+
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Crear Nueva Tiquetera</ion-card-title>
+      <ion-card-subtitle>Ingrese los datos para la tiquetera</ion-card-subtitle>
+    </ion-card-header>
+
+    <ion-card-content>
+      <form [formGroup]="tiqueteraForm" (ngSubmit)="createTiquetera()">
+        <ion-item>
+          <ion-label position="stacked">Cliente</ion-label>
+          <ion-button size="small" fill="clear" color="primary" (click)="toggleUserForm()">
+            {{ showUserForm ? 'Cancelar' : 'Crear nuevo usuario' }}
+          </ion-button>
+        </ion-item>
+
+        <!-- Búsqueda de usuarios por nombre -->
+        <ion-item *ngIf="!showUserForm">
+          <ion-icon name="search" slot="start"></ion-icon>
+          <ion-input 
+            [formControl]="searchControl" 
+            placeholder="Buscar cliente por nombre"
+            clearInput="true">
+          </ion-input>
+        </ion-item>
+
+        <!-- Resultados de búsqueda -->
+        <ion-list *ngIf="filteredUsuarios.length > 0">
+          <ion-item *ngFor="let user of filteredUsuarios" button (click)="selectUser(user)">
+            <ion-label>
+              <h2>{{ user.nombre }}</h2>
+              <p>{{ user.username }}</p>
+            </ion-label>
+            <ion-icon name="person" slot="end"></ion-icon>
+          </ion-item>
+        </ion-list>
+
+        <!-- Mensaje de búsqueda en curso -->
+        <ion-item *ngIf="searching">
+          <ion-spinner name="lines" slot="start"></ion-spinner>
+          <ion-label>Buscando usuarios...</ion-label>
+        </ion-item>
+
+        <!-- Selección de usuario existente -->
+        <ion-item *ngIf="!showUserForm">
+          <ion-select formControlName="cliente_id" placeholder="Seleccione un cliente">
+            <ion-select-option *ngFor="let usuario of usuarios" [value]="usuario.id">
+              {{ usuario.nombre }} ({{ usuario.username }})
+            </ion-select-option>
+          </ion-select>
+          <ion-note slot="error" *ngIf="tiqueteraForm.get('cliente_id')?.hasError('required') && tiqueteraForm.get('cliente_id')?.touched">
+            Debe seleccionar un cliente
+          </ion-note>
+        </ion-item>
+
+        <!-- Formulario para crear nuevo usuario (fuera del form principal) -->
+        <div *ngIf="showUserForm" [formGroup]="userForm">
+          <ion-card>
+            <ion-card-header>
+              <ion-card-title>Crear Nuevo Usuario</ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <ion-item>
+                <ion-label position="floating">Nombre completo</ion-label>
+                <ion-input type="text" formControlName="nombre"></ion-input>
+              </ion-item>
+              <div style="min-height: 25px; padding-left: 16px;" *ngIf="userForm.get('nombre')?.invalid && (userForm.get('nombre')?.dirty || userForm.get('nombre')?.touched)">
+                <ion-note color="danger" style="font-size: 1em; font-weight: bold;">
+                  <span *ngIf="userForm.get('nombre')?.hasError('required')">
+                    El nombre completo es obligatorio.
+                  </span>
+                  <span *ngIf="userForm.get('nombre')?.hasError('nombreOcupado')">
+                    Ya existe un cliente con este nombre.
+                  </span>
+                </ion-note>
+              </div>
+
+              <ion-item>
+                <ion-label position="floating">Nombre de usuario</ion-label>
+                <ion-input type="text" formControlName="usuario"></ion-input>
+              </ion-item>
+              <div style="min-height: 25px; padding-left: 16px;" *ngIf="userForm.get('usuario')?.invalid && (userForm.get('usuario')?.dirty || userForm.get('usuario')?.touched)">
+                <ion-note color="danger" style="font-size: 1em; font-weight: bold;">
+                  <span *ngIf="userForm.get('usuario')?.hasError('required')">
+                    El nombre de usuario es obligatorio.
+                  </span>
+                  <span *ngIf="userForm.get('usuario')?.hasError('usuarioOcupado')">
+                    Este nombre de usuario ya está registrado.
+                  </span>
+                </ion-note>
+              </div>
+
+              <ion-item>
+                <ion-label position="floating">Contraseña</ion-label>
+                <ion-input type="password" formControlName="contrasena"></ion-input>
+                <ion-note slot="error" *ngIf="userForm.get('contrasena')?.touched && userForm.get('contrasena')?.errors?.['required']">
+                  La contraseña es requerida
+                </ion-note>
+                <ion-note slot="error" *ngIf="userForm.get('contrasena')?.touched && userForm.get('contrasena')?.errors?.['minlength']">
+                  La contraseña debe tener al menos 6 caracteres
+                </ion-note>
+              </ion-item>
+              <ion-item>
+                <ion-label position="floating">Cédula</ion-label>
+                <ion-input type="text" formControlName="cedula"></ion-input>
+                <ion-note slot="error" *ngIf="userForm.get('cedula')?.touched && userForm.get('cedula')?.errors?.['required']">
+                  La cédula es requerida
+                </ion-note>
+              </ion-item>
+              <ion-item>
+                <ion-label position="floating">PIN (4 dígitos)</ion-label>
+                <ion-input type="password" maxlength="4" formControlName="pin"></ion-input>
+              </ion-item>
+              <div style="min-height: 25px; padding-left: 16px;" *ngIf="userForm.get('pin')?.invalid && (userForm.get('pin')?.dirty || userForm.get('pin')?.touched)">
+                <ion-note color="danger" style="font-size: 1em; font-weight: bold;">
+                  <span *ngIf="userForm.get('pin')?.hasError('required')">
+                    El PIN es requerido
+                  </span>
+                  <span *ngIf="userForm.get('pin')?.hasError('minlength') || userForm.get('pin')?.hasError('maxlength')">
+                    El PIN debe tener 4 dígitos
+                  </span>
+                  <span *ngIf="userForm.get('pin')?.hasError('pinOcupado')">
+                    Este PIN ya está registrado. Por favor, elige otro.
+                  </span>
+                </ion-note>
+              </div>
+              <ion-button 
+                expand="block" 
+                [disabled]="userForm.invalid || loading"
+                class="ion-margin-top"
+                (click)="createUser()">
+                <ion-spinner *ngIf="loading"></ion-spinner>
+                <span *ngIf="!loading">Crear Usuario</span>
+              </ion-button>
+            </ion-card-content>
+          </ion-card>
+        </div>
+        <!-- Fin del formulario de usuario -->
+        
+        <!-- Resto del formulario de tiquetera -->
+        <ion-item>
+          <ion-label position="stacked">Cantidad de Tickets</ion-label>
+          <ion-input type="number" formControlName="cantidadTickets"></ion-input>
+          <ion-note slot="helper">Cada ticket representa una comida que el cliente puede consumir</ion-note>
+          <ion-note slot="error" *ngIf="tiqueteraForm.get('cantidadTickets')?.hasError('required') && tiqueteraForm.get('cantidadTickets')?.touched">
+            La cantidad de tickets es requerida
+          </ion-note>
+          <ion-note slot="error" *ngIf="tiqueteraForm.get('cantidadTickets')?.hasError('min') && tiqueteraForm.get('cantidadTickets')?.touched">
+            La cantidad de tickets debe ser mayor a cero
+          </ion-note>
+        </ion-item>
+
+        <ion-item>
+          <ion-label position="stacked">Precio (COP)</ion-label>
+          <ion-input type="number" formControlName="price"></ion-input>
+          <ion-note slot="helper">Precio total de la tiquetera (por defecto: 225.000)</ion-note>
+          <ion-note slot="error" *ngIf="tiqueteraForm.get('price')?.hasError('required') && tiqueteraForm.get('price')?.touched">
+            El precio es requerido
+          </ion-note>
+          <ion-note slot="error" *ngIf="tiqueteraForm.get('price')?.hasError('min') && tiqueteraForm.get('price')?.touched">
+            El precio debe ser mayor a cero
+          </ion-note>
+        </ion-item>
+
+        <ion-item>
+          <ion-label position="stacked">Fecha de Vencimiento (opcional)</ion-label>
+          <ion-datetime-button datetime="datetime"></ion-datetime-button>
+          <ion-modal [keepContentsMounted]="true">
+            <ng-template>
+              <ion-datetime 
+                id="datetime" 
+                formControlName="fechaVencimiento"
+                presentation="date"
+                locale="es-ES">
+              </ion-datetime>
+            </ng-template>
+          </ion-modal>
+        </ion-item>
+
+        <ion-button 
+          expand="block" 
+          type="submit" 
+          [disabled]="tiqueteraForm.invalid || loading || showUserForm"
+          class="ion-margin-top">
+          <ion-spinner *ngIf="loading"></ion-spinner>
+          <span *ngIf="!loading">Crear Tiquetera</span>
+        </ion-button>
+      </form>
+    </ion-card-content>
+  </ion-card>
+</ion-content> 

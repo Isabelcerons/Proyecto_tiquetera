@@ -1,0 +1,112 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Panel de Cajero</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="logout()">
+        <ion-icon name="log-out" slot="start"></ion-icon>
+        Cerrar sesión
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="user-greeting">
+    <h2>Bienvenido, {{ currentUser?.nombre || 'Cajero' }}</h2>
+    <p>Panel de Caja</p>
+  </div>
+
+  <!-- Skeleton loader mientras carga -->
+  <div *ngIf="loading">
+    <ion-skeleton-text animated style="width: 100%; height: 120px; margin-bottom: 16px;"></ion-skeleton-text>
+    <ion-skeleton-text animated style="width: 100%; height: 120px;"></ion-skeleton-text>
+  </div>
+
+  <!-- Métricas del día -->
+  <ion-grid *ngIf="!loading">
+    <ion-row>
+      <ion-col size="12" size-md="6">
+        <ion-card>
+          <ion-card-header>
+            <ion-card-subtitle>Ventas del día</ion-card-subtitle>
+            <ion-card-title class="ion-text-center" color="primary">
+              ${{ ventasHoy | number:'1.0-0' }}
+            </ion-card-title>
+          </ion-card-header>
+          <ion-card-content class="ion-text-center">
+            <ion-icon name="cash-outline" size="large" color="success"></ion-icon>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+
+      <ion-col size="12" size-md="6">
+        <ion-card>
+          <ion-card-header>
+            <ion-card-subtitle>Operaciones del día</ion-card-subtitle>
+            <ion-card-title class="ion-text-center" color="primary">
+              {{ operacionesHoy }}
+            </ion-card-title>
+          </ion-card-header>
+          <ion-card-content class="ion-text-center">
+            <ion-icon name="receipt-outline" size="large" color="primary"></ion-icon>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+
+  <!-- Funciones principales -->
+  <ion-card *ngIf="!loading">
+    <ion-card-header>
+      <ion-card-title>Operaciones de Caja</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-grid>
+        <ion-row>
+          <ion-col size="6">
+            <ion-button 
+              expand="block" 
+              color="primary" 
+              (click)="navigateTo('buscar-tiquetera')" 
+              class="feature-button">
+              <ion-icon name="search-outline" slot="start"></ion-icon>
+              Buscar Tiquetera
+            </ion-button>
+          </ion-col>
+          <ion-col size="6">
+            <ion-button 
+              expand="block" 
+              color="secondary" 
+              (click)="navigateTo('ordenes')" 
+              class="feature-button">
+              <ion-icon name="receipt-outline" slot="start"></ion-icon>
+              Órdenes
+            </ion-button>
+          </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col size="6">
+            <ion-button 
+              expand="block" 
+              color="tertiary" 
+              (click)="navigateTo('pagos')" 
+              class="feature-button">
+              <ion-icon name="card-outline" slot="start"></ion-icon>
+              Pagos
+            </ion-button>
+          </ion-col>
+          <ion-col size="6">
+            <ion-button 
+              expand="block" 
+              color="warning" 
+              (click)="navigateTo('reporte-diario')" 
+              class="feature-button">
+              <ion-icon name="document-text-outline" slot="start"></ion-icon>
+              Reporte diario
+            </ion-button>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+    </ion-card-content>
+  </ion-card>
+</ion-content> 

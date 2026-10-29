@@ -1,0 +1,185 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-button (click)="volver()">
+        <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Reporte Diario</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <!-- Selector de fecha -->
+  <ion-card>
+    <ion-card-content>
+      <ion-item>
+        <ion-label>Fecha</ion-label>
+        <ion-datetime-button datetime="date"></ion-datetime-button>
+        <ion-modal [keepContentsMounted]="true">
+          <ng-template>
+            <ion-datetime 
+              id="date" 
+              presentation="date"
+              [(ngModel)]="currentDate"
+              (ionChange)="fechaCambiada()"
+              locale="es-ES"
+              [showDefaultButtons]="true"
+              doneText="Aceptar"
+              cancelText="Cancelar">
+            </ion-datetime>
+          </ng-template>
+        </ion-modal>
+      </ion-item>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Contenido con segmentos -->
+  <ion-segment [(ngModel)]="segmento" (ionChange)="segmentChanged($event)">
+    <ion-segment-button value="resumen">
+      <ion-label>Resumen</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="ordenes">
+      <ion-label>Órdenes</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="movimientos">
+      <ion-label>Movimientos</ion-label>
+    </ion-segment-button>
+  </ion-segment>
+
+  <!-- Loading indicator -->
+  <div *ngIf="loading" class="ion-text-center ion-padding">
+    <ion-spinner></ion-spinner>
+    <p>Cargando datos...</p>
+  </div>
+
+  <!-- Sección de Resumen -->
+  <div *ngIf="!loading && segmento === 'resumen'">
+    <ion-card>
+      <ion-card-header>
+        <ion-card-subtitle>{{ resumenDiario.fecha }}</ion-card-subtitle>
+        <ion-card-title>Resumen de Ventas</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-grid>
+          <ion-row>
+            <ion-col size="12">
+              <div class="total-box">
+                <div class="total-label">Ingresos Totales</div>
+                <div class="total-value">{{ formatCurrency(resumenDiario.ingresos.total) }}</div>
+              </div>
+            </ion-col>
+          </ion-row>
+          
+          <ion-row>
+            <ion-col size="4">
+              <div class="metric-box">
+                <div class="metric-label">Efectivo</div>
+                <div class="metric-value">{{ formatCurrency(resumenDiario.ingresos.efectivo) }}</div>
+              </div>
+            </ion-col>
+            <ion-col size="4">
+              <div class="metric-box">
+                <div class="metric-label">Tarjeta</div>
+                <div class="metric-value">{{ formatCurrency(resumenDiario.ingresos.tarjeta) }}</div>
+              </div>
+            </ion-col>
+            <ion-col size="4">
+              <div class="metric-box">
+                <div class="metric-label">Tiquetera</div>
+                <div class="metric-value">{{ formatCurrency(resumenDiario.ingresos.tiquetera) }}</div>
+              </div>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Estadísticas de Órdenes</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-grid>
+          <ion-row>
+            <ion-col size="6">
+              <div class="metric-box">
+                <div class="metric-label">Total Órdenes</div>
+                <div class="metric-value">{{ resumenDiario.ordenes.cantidad }}</div>
+              </div>
+            </ion-col>
+            <ion-col size="6">
+              <div class="metric-box">
+                <div class="metric-label">Valor Promedio</div>
+                <div class="metric-value">{{ formatCurrency(resumenDiario.ordenes.promedio) }}</div>
+              </div>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <!-- Sección de Órdenes -->
+  <div *ngIf="!loading && segmento === 'ordenes'">
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Órdenes del Día</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list *ngIf="ordenesDia.length > 0">
+          <ion-item *ngFor="let orden of ordenesDia">
+            <ion-label>
+              <h2>Orden #{{ orden.id }}</h2>
+              <p>Mesa: {{ orden.mesa_id }}</p>
+              <p>Estado: {{ orden.estado }}</p>
+            </ion-label>
+            <ion-note slot="end">
+              <strong>{{ formatCurrency(orden.total) }}</strong>
+              <p *ngIf="orden.metodo_pago">{{ orden.metodo_pago }}</p>
+            </ion-note>
+          </ion-item>
+        </ion-list>
+        
+        <div *ngIf="ordenesDia.length === 0" class="ion-text-center ion-padding">
+          <p>No hay órdenes para mostrar en la fecha seleccionada.</p>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <!-- Sección de Movimientos -->
+  <div *ngIf="!loading && segmento === 'movimientos'">
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Movimientos de Tiqueteras</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list *ngIf="movimientosDia.length > 0">
+          <ion-item *ngFor="let movimiento of movimientosDia">
+            <ion-label>
+              <h2>{{ movimiento.tipo === 'carga' ? 'Carga' : 'Consumo' }}</h2>
+              <p>Tiquetera: {{ movimiento.tiquetera_id }}</p>
+              <p>{{ movimiento.descripcion || 'Sin descripción' }}</p>
+            </ion-label>
+            <ion-note slot="end" [color]="movimiento.tipo === 'carga' ? 'success' : 'danger'">
+              <strong>{{ formatCurrency(movimiento.monto) }}</strong>
+              <p>{{ movimiento.fecha | date:'short' }}</p>
+            </ion-note>
+          </ion-item>
+        </ion-list>
+        
+        <div *ngIf="movimientosDia.length === 0" class="ion-text-center ion-padding">
+          <p>No hay movimientos de tiqueteras para mostrar en la fecha seleccionada.</p>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <!-- Botón para exportar reporte (funcionalidad futura) -->
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button>
+      <ion-icon name="download-outline"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+</ion-content> 

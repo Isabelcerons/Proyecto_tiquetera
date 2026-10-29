@@ -1,0 +1,39 @@
+# Dependencias
+/node_modules
+/npm-debug.log
+/yarn-error.log
+
+# Salidas de compilación
+/dist
+/tmp
+/out
+/coverage
+
+# Archivos de entorno
+.env
+*.env
+
+# Archivos de bases de datos temporales o de pruebas
+*.sqlite
+*.sqlite3
+*.db
+
+# Archivos del sistema y del editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Archivos de logs
+*.log
+logs/
+log.txt
+
+# Archivos de respaldo
+*.bak
+*.old
+
+# Otros
+test-report.xml

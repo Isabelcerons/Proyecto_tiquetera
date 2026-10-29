@@ -1,0 +1,40 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-button (click)="volver()">
+        <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Mis Mesas</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="ion-padding" *ngIf="loading">
+    <ion-spinner></ion-spinner>
+    <p>Cargando mesas...</p>
+  </div>
+  <ion-grid *ngIf="!loading">
+    <ion-row>
+      <ion-col size="12" size-md="4" *ngFor="let mesa of mesas">
+        <ion-card (click)="seleccionarMesa(mesa)" class="mesa-card" [ngClass]="mesa.estado">
+          <ion-card-header>
+            <ion-card-title>Mesa {{ mesa.numero }}</ion-card-title>
+            <ion-card-subtitle>{{ mesa.zona }}</ion-card-subtitle>
+          </ion-card-header>
+          <ion-card-content>
+            <p>Capacidad: {{ mesa.capacidad }} personas</p>
+            <ion-badge [color]="mesa.estado.nombre === 'disponible' ? 'success' : mesa.estado.nombre === 'ocupada' ? 'warning' : 'medium'">
+              {{ mesa.estado.nombre | titlecase }}
+            </ion-badge>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+    <ion-row *ngIf="mesas.length === 0">
+      <ion-col class="ion-text-center">
+        <p>No hay mesas disponibles.</p>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-content> 

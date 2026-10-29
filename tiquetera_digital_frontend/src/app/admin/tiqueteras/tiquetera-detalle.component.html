@@ -1,0 +1,179 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-button (click)="volver()">
+        <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Detalles de Tiquetera</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <!-- Loading indicator -->
+  <div *ngIf="loading" class="ion-text-center ion-padding">
+    <ion-spinner></ion-spinner>
+    <p>Cargando datos...</p>
+  </div>
+
+  <!-- Error message -->
+  <ion-item *ngIf="errorMessage" color="danger">
+    <ion-label>{{ errorMessage }}</ion-label>
+  </ion-item>
+
+  <!-- No se encontró tiquetera -->
+  <ion-card *ngIf="!loading && !tiquetera">
+    <ion-card-header>
+      <ion-card-title>Tiquetera no encontrada</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <p>La tiquetera solicitada no existe o ha sido eliminada.</p>
+      <ion-button expand="block" (click)="volver()">Volver a la lista</ion-button>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Detalles de tiquetera -->
+  <div *ngIf="!loading && tiquetera">
+    <!-- Segmentos para navegación -->
+    <ion-segment [(ngModel)]="activeTab" (ionChange)="segmentChanged($event)">
+      <ion-segment-button value="info">
+        <ion-label>Información</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="recargar">
+        <ion-label>Recargar</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="movimientos">
+        <ion-label>Movimientos</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+
+    <!-- Tab Información -->
+    <div *ngIf="activeTab === 'info'">
+      <ion-card>
+        <ion-card-header>
+          <ion-card-subtitle>Tiquetera #{{ tiquetera.id }}</ion-card-subtitle>
+          <ion-card-title>
+            Cliente: {{ tiquetera.cliente?.nombre || 'Sin asignar' }}
+          </ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <ion-grid>
+            <ion-row>
+              <ion-col size="6">
+                <p><strong>Saldo:</strong> {{ tiquetera.saldoDisponible | currency:'COP':'symbol':'1.0-0' }}</p>
+              </ion-col>
+              <ion-col size="6">
+                <p><strong>Estado:</strong> {{ tiquetera.estado }}</p>
+              </ion-col>
+            </ion-row>
+            <ion-row>
+              <ion-col size="6">
+                <p><strong>Creada:</strong> {{ tiquetera.fechaCreacion | date:'dd/MM/yyyy' }}</p>
+              </ion-col>
+              <ion-col size="6" *ngIf="tiquetera.fechaVencimiento">
+                <p><strong>Vence:</strong> {{ tiquetera.fechaVencimiento | date:'dd/MM/yyyy' }}</p>
+              </ion-col>
+            </ion-row>
+          </ion-grid>
+
+          <!-- Formulario de edición -->
+          <form [formGroup]="tiqueteraForm" (ngSubmit)="saveChanges()">
+            <ion-item>
+              <ion-label position="stacked">Estado</ion-label>
+              <ion-toggle formControlName="activa">{{ tiqueteraForm.get('activa')?.value ? 'Activa' : 'Inactiva' }}</ion-toggle>
+            </ion-item>
+            
+            <ion-item>
+              <ion-label position="stacked">Fecha de vencimiento</ion-label>
+              <ion-datetime-button datetime="datetime"></ion-datetime-button>
+              <ion-modal [keepContentsMounted]="true">
+                <ng-template>
+                  <ion-datetime 
+                    id="datetime" 
+                    formControlName="fechaVencimiento"
+                    presentation="date"
+                    locale="es-ES">
+                  </ion-datetime>
+                </ng-template>
+              </ion-modal>
+            </ion-item>
+            
+            <ion-button 
+              expand="block" 
+              type="submit" 
+              [disabled]="tiqueteraForm.invalid || formLoading"
+              class="ion-margin-top">
+              <ion-spinner *ngIf="formLoading"></ion-spinner>
+              <span *ngIf="!formLoading">Guardar cambios</span>
+            </ion-button>
+          </form>
+        </ion-card-content>
+      </ion-card>
+    </div>
+
+    <!-- Tab Recargar -->
+    <div *ngIf="activeTab === 'recargar'">
+      <ion-card>
+        <ion-card-header>
+          <ion-card-title>Recargar Tiquetera</ion-card-title>
+          <ion-card-subtitle>Saldo actual: {{ tiquetera.saldoDisponible | currency:'COP':'symbol':'1.0-0' }}</ion-card-subtitle>
+        </ion-card-header>
+        <ion-card-content>
+          <form [formGroup]="cargarSaldoForm" (ngSubmit)="cargarSaldo()">
+            <ion-item>
+              <ion-label position="floating">Monto a cargar</ion-label>
+              <ion-input type="number" formControlName="monto"></ion-input>
+              <ion-note slot="error" *ngIf="cargarSaldoForm.get('monto')?.invalid && cargarSaldoForm.get('monto')?.touched">
+                El monto debe ser mayor a cero
+              </ion-note>
+            </ion-item>
+            
+            <ion-item>
+              <ion-label position="floating">Descripción (opcional)</ion-label>
+              <ion-input formControlName="descripcion"></ion-input>
+            </ion-item>
+            
+            <ion-button 
+              expand="block" 
+              type="submit" 
+              [disabled]="cargarSaldoForm.invalid || formLoading"
+              class="ion-margin-top">
+              <ion-spinner *ngIf="formLoading"></ion-spinner>
+              <span *ngIf="!formLoading">Recargar saldo</span>
+            </ion-button>
+          </form>
+        </ion-card-content>
+      </ion-card>
+    </div>
+
+    <!-- Tab Movimientos -->
+    <div *ngIf="activeTab === 'movimientos'">
+      <ion-card>
+        <ion-card-header>
+          <ion-card-title>Historial de Movimientos</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <ion-list>
+            <ion-item *ngFor="let movimiento of movimientos">
+              <ion-label>
+                <h3 [ngClass]="{'text-success': movimiento.tipo === 'carga', 'text-danger': movimiento.tipo === 'consumo'}">
+                  {{ movimiento.tipo === 'carga' ? '+' : '-' }} {{ movimiento.monto | currency:'COP':'symbol':'1.0-0' }}
+                </h3>
+                <p>{{ movimiento.descripcion }}</p>
+                <p>{{ movimiento.fecha | date:'dd/MM/yyyy HH:mm' }}</p>
+              </ion-label>
+              <ion-note slot="end" color="medium">
+                Saldo: {{ movimiento.saldoNuevo | currency:'COP':'symbol':'1.0-0' }}
+              </ion-note>
+            </ion-item>
+            <ion-item *ngIf="movimientos.length === 0">
+              <ion-label class="ion-text-center">
+                <p>No hay movimientos registrados</p>
+              </ion-label>
+            </ion-item>
+          </ion-list>
+        </ion-card-content>
+      </ion-card>
+    </div>
+  </div>
+</ion-content> 

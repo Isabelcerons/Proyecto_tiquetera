@@ -1,0 +1,49 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-button (click)="volver()">
+        <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Gestión de Tiqueteras</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <!-- Loading indicator -->
+  <div *ngIf="loading" class="ion-text-center ion-padding">
+    <ion-spinner></ion-spinner>
+    <p>Cargando tiqueteras...</p>
+  </div>
+
+  <!-- Lista de tiqueteras -->
+  <ion-list *ngIf="!loading">
+    <ion-item *ngFor="let tiquetera of tiqueteras" (click)="verDetalle(tiquetera.id)" button detail="true">
+      <ion-label>
+        <h2>Tiquetera #{{ tiquetera.id }}</h2>
+        <p>Cliente: {{ tiquetera.cliente?.nombre || 'Sin asignar' }}</p>
+        <p>Saldo: {{ tiquetera.saldoDisponible | currency:'COP':'symbol':'1.0-0' }}</p>
+        <p>Creada: {{ tiquetera.fechaCreacion | date:'dd/MM/yyyy' }}</p>
+      </ion-label>
+      <ion-badge slot="end" color="success" *ngIf="tiquetera.estado === 'activa'">Activa</ion-badge>
+      <ion-badge slot="end" color="warning" *ngIf="tiquetera.estado === 'vencida'">Vencida</ion-badge>
+      <ion-badge slot="end" color="danger" *ngIf="tiquetera.estado === 'agotada'">Agotada</ion-badge>
+      <ion-badge slot="end" color="medium" *ngIf="tiquetera.estado === 'cancelada'">Cancelada</ion-badge>
+    </ion-item>
+
+    <!-- Mensaje si no hay tiqueteras -->
+    <ion-item *ngIf="tiqueteras.length === 0">
+      <ion-label class="ion-text-center">
+        <h2>No hay tiqueteras disponibles</h2>
+        <p>Agregue nuevas tiqueteras para comenzar</p>
+      </ion-label>
+    </ion-item>
+  </ion-list>
+
+  <!-- Botón flotante para agregar tiquetera -->
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button (click)="crearTiquetera()">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+</ion-content> 
